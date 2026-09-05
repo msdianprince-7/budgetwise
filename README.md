@@ -266,12 +266,5 @@ The decisions behind that code were mine:
 - Structured JSON-schema output instead of parsing prose, so the response shape is guaranteed.
 - Ownership is checked on every write rather than trusting the record id in the URL.
 
-Three things changed after testing rather than on the first draft. A seven-colour category
-palette was replaced after a colour-vision check showed adjacent categories were
-indistinguishable. The first prompt compared a single category against the 50% needs target,
-which is wrong, so the prompt now states the targets apply to grouped categories. And moving
-from SQLite to Postgres surfaced a build failure from constructing the database client at module
-scope, which is now lazy.
-
 Every endpoint was exercised with `npm run smoke` and the UI walked through in the browser, in
 both themes, before this was considered done.
