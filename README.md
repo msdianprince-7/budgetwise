@@ -3,7 +3,6 @@
 Track monthly income and expenses by category, see where the money actually goes, and get an
 AI financial health check written against your own numbers.
 
-Built as the Zenara Technologies / ADWIZR take-home assignment for Full Stack Developer (AI-Enabled).
 
 **Live demo: <https://budgetwise-blue.vercel.app>** — log in with `demo@budgetwise.app` / `demo1234`,
 or create your own account.
