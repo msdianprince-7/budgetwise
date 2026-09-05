@@ -59,8 +59,14 @@ create your own account at `/signup`.
 | `npm run build` / `npm start` | Production build and serve |
 | `npm run db:migrate` | Apply schema changes |
 | `npm run db:seed` | Reset the demo account and reseed it |
+| `npm run db:reset` | Drop the database, re-run every migration, reseed |
 | `npm run db:studio` | Browse the database in Prisma Studio |
+| `npm run smoke` | End-to-end API check against a running server |
 | `npm run lint` | ESLint |
+
+`npm run smoke` is the fastest way to confirm everything works: it exercises auth, validation,
+expense CRUD, cross-account isolation, budget caps, the summary maths and a live AI call, then
+prints a pass/fail line for each. Start the dev server first, then run it in a second terminal.
 
 ---
 
@@ -163,13 +169,17 @@ The output is guidance, not licensed financial advice, and the UI says so.
 
 ```
 prisma/schema.prisma      User, Income, Expense, BudgetLimit
+prisma/migrations/        Versioned SQL migrations
 prisma/seed.ts            Demo account with four months of data
 prisma.config.ts          Prisma 7 config: datasource URL and migration paths
+scripts/smoke.mjs         End-to-end API check
 src/lib/summary.ts        All budget maths, shared by the dashboard and the AI prompt
 src/lib/ai.ts             Groq prompt, schema and call
 src/lib/auth.ts           JWT sign and verify, session cookie
 src/lib/api.ts            Route helpers: auth guard, Zod body parsing, error shaping
 src/lib/theme.tsx         Theme store and toggle
+src/lib/db.ts             Lazily constructed Prisma client
+src/app/globals.css       Theme tokens and component styles
 src/app/api/...           REST route handlers
 src/components/...        Dashboard, charts, entry panels, budget limits, health check
 ```
@@ -189,3 +199,50 @@ src/components/...        Dashboard, charts, entry panels, budget limits, health
 
 Known gaps for a real deployment: no rate limiting on the auth or AI endpoints, and the AI route
 is unthrottled per user.
+
+---
+
+## Deployment
+
+Deployed on Vercel with the database on Neon Postgres. The same three environment variables the
+app needs locally are set in the Vercel project: `DATABASE_URL`, `JWT_SECRET` and `GROQ_API_KEY`.
+
+Two details that matter when deploying this:
+
+- The Prisma client is created lazily in `src/lib/db.ts`. Next evaluates route modules while
+  collecting page data during the build, so constructing a client at module scope makes the
+  build fail whenever `DATABASE_URL` is not yet present.
+- Migrations are applied with `prisma migrate deploy` against the production database rather
+  than being generated at build time.
+
+---
+
+## AI tools used
+
+**Claude Code** (Claude Opus 5), used through an interactive terminal session, with the
+assignment brief as the starting spec.
+
+Where it did the most work was the interface: the entire stylesheet and theme system, the
+two-theme colour tokens, the dashboard layout, the chart components, and the loading and empty
+states. Styling is where the leverage was highest and where I iterated most on the output.
+
+It also generated the first pass of the backend — Prisma schema, route handlers, the JWT and
+bcrypt auth, the summary calculations and the Groq prompt — which I then reviewed and directed.
+The decisions behind that code were mine:
+
+- Every budget figure is computed in one place, `src/lib/summary.ts`, so the dashboard and the
+  AI prompt can never disagree about the same month.
+- The model receives computed percentages rather than raw rows, so it never has to do
+  arithmetic it could get wrong.
+- Structured JSON-schema output instead of parsing prose, so the response shape is guaranteed.
+- Ownership is checked on every write rather than trusting the record id in the URL.
+
+Three things changed after testing rather than on the first draft. A seven-colour category
+palette was replaced after a colour-vision check showed adjacent categories were
+indistinguishable. The first prompt compared a single category against the 50% needs target,
+which is wrong, so the prompt now states the targets apply to grouped categories. And moving
+from SQLite to Postgres surfaced a build failure from constructing the database client at module
+scope, which is now lazy.
+
+Every endpoint was exercised with `npm run smoke` and the UI walked through in the browser, in
+both themes, before this was considered done.
