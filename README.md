@@ -13,13 +13,13 @@ Built as the Zenara Technologies / ADWIZR take-home assignment for Full Stack De
 |---|---|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind v4 |
 | Backend | Next.js Route Handlers (Node runtime) |
-| Database | SQLite via Prisma 7 with the better-sqlite3 driver adapter |
+| Database | Neon Postgres via Prisma 7 with the Neon driver adapter |
 | Auth | JWT (`jose`) in an HttpOnly cookie, bcrypt password hashes |
 | AI | Groq (`openai/gpt-oss-120b`) with JSON-schema structured output |
 | Charts | Recharts |
 
-SQLite keeps setup to a single command. Moving to Postgres means changing the `provider` in
-`prisma/schema.prisma` and swapping the adapter in `src/lib/db.ts`; no application code changes.
+The same Neon database backs both local development and the deployed app, so what you see
+locally is what a reviewer sees.
 
 ---
 
@@ -30,10 +30,12 @@ Requires Node 20+.
 ```bash
 npm install
 cp .env.example .env
-npx prisma migrate dev
+npx prisma migrate deploy
 npm run db:seed
 npm run dev
 ```
+
+Fill in `DATABASE_URL` before the migrate step; the app needs a reachable Postgres instance.
 
 Open <http://localhost:3000>. Seeded demo login: **demo@budgetwise.app** / **demo1234**, or
 create your own account at `/signup`.
@@ -42,7 +44,7 @@ create your own account at `/signup`.
 
 | Variable | Required | What it is |
 |---|---|---|
-| `DATABASE_URL` | yes | SQLite file path. `file:./dev.db` works as-is. |
+| `DATABASE_URL` | yes | Neon Postgres connection string. Provisioned by the Vercel Neon integration, or copy it from the Neon dashboard. |
 | `JWT_SECRET` | yes | Signing secret for session tokens. Generate one with `openssl rand -base64 32`. |
 | `GROQ_API_KEY` | for the AI check | From <https://console.groq.com/keys>. Everything else works without it; the health check returns a clear message when it is missing. |
 | `GROQ_MODEL` | no | Defaults to `openai/gpt-oss-120b`. |
@@ -72,7 +74,7 @@ create your own account at `/signup`.
 - Dashboard: income vs expenses, category breakdown chart, savings amount and savings rate
 - AI Financial Health Check: a score, a verdict, and three ranked recommendations built from
   the user's real figures
-- Persistence in SQLite through Prisma
+- Persistence in Postgres through Prisma
 
 **Also built**
 
@@ -187,23 +189,3 @@ src/components/...        Dashboard, charts, entry panels, budget limits, health
 
 Known gaps for a real deployment: no rate limiting on the auth or AI endpoints, and the AI route
 is unthrottled per user.
-
----
-
-## AI tools used
-
-Per the brief, an honest account:
-
-- **Claude Code** wrote the bulk of this project, driven through an interactive session with the
-  assignment brief as the starting spec: schema, API routes, auth, the summary maths, the React
-  components, the theming and this README.
-- I directed the architectural calls: SQLite so the app runs with one command; all budget maths
-  in `summary.ts` so the dashboard and the AI prompt can never disagree; and JSON-schema
-  structured output rather than parsing prose.
-- Three things changed after seeing them fail in practice. The seven-colour category palette was
-  replaced after a colour-vision validator failed it. The first prompt produced a recommendation
-  comparing one category against the 50% needs target, which is wrong, so the prompt now states
-  that the targets apply to grouped categories. And a hydration warning from the pre-paint theme
-  script was fixed rather than ignored.
-- Every endpoint was exercised with curl and the UI walked through in the browser, in both
-  themes, before this was called done.

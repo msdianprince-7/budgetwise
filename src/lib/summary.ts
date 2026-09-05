@@ -1,4 +1,4 @@
-import { prisma } from "./db";
+import { getPrisma } from "./db";
 import { CATEGORIES, NEEDS, WANTS, recentMonths, type Category } from "./categories";
 
 export type CategoryBreakdown = {
@@ -28,9 +28,9 @@ export async function buildSummary(userId: string, month: string): Promise<Month
   const months = recentMonths(month, 6);
 
   const [incomes, expenses, limits] = await Promise.all([
-    prisma.income.findMany({ where: { userId, month: { in: months } } }),
-    prisma.expense.findMany({ where: { userId, month: { in: months } } }),
-    prisma.budgetLimit.findMany({ where: { userId } }),
+    getPrisma().income.findMany({ where: { userId, month: { in: months } } }),
+    getPrisma().expense.findMany({ where: { userId, month: { in: months } } }),
+    getPrisma().budgetLimit.findMany({ where: { userId } }),
   ]);
 
   const thisMonthIncome = incomes.filter((i) => i.month === month);

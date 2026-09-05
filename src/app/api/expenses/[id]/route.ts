@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import { handler, jsonError, parseBody, requireUserId } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
 
@@ -16,7 +16,7 @@ const updateSchema = z
 type Params = { params: Promise<{ id: string }> };
 
 async function ownedExpense(id: string, userId: string) {
-  const expense = await prisma.expense.findFirst({ where: { id, userId } });
+  const expense = await getPrisma().expense.findFirst({ where: { id, userId } });
   if (!expense) throw jsonError("Expense not found", 404);
   return expense;
 }
@@ -27,7 +27,7 @@ export const PATCH = handler(async (req: Request, { params }: Params) => {
   await ownedExpense(id, userId);
 
   const data = await parseBody(req, updateSchema);
-  const expense = await prisma.expense.update({ where: { id }, data });
+  const expense = await getPrisma().expense.update({ where: { id }, data });
   return NextResponse.json({ expense });
 });
 
@@ -36,6 +36,6 @@ export const DELETE = handler(async (req: Request, { params }: Params) => {
   const { id } = await params;
   await ownedExpense(id, userId);
 
-  await prisma.expense.delete({ where: { id } });
+  await getPrisma().expense.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 });

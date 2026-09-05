@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import { handler, parseBody, requireUserId } from "@/lib/api";
 import { currentMonth } from "@/lib/categories";
 
@@ -16,7 +16,7 @@ export const GET = handler(async (req: Request) => {
   const userId = await requireUserId(req);
   const month = new URL(req.url).searchParams.get("month") ?? currentMonth();
 
-  const incomes = await prisma.income.findMany({
+  const incomes = await getPrisma().income.findMany({
     where: { userId, month },
     orderBy: { createdAt: "desc" },
   });
@@ -27,6 +27,6 @@ export const POST = handler(async (req: Request) => {
   const userId = await requireUserId(req);
   const data = await parseBody(req, createSchema);
 
-  const income = await prisma.income.create({ data: { ...data, userId } });
+  const income = await getPrisma().income.create({ data: { ...data, userId } });
   return NextResponse.json({ income }, { status: 201 });
 });

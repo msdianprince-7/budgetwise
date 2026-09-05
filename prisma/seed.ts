@@ -7,9 +7,10 @@ import { PrismaClient } from "../src/generated/prisma";
 
 neonConfig.webSocketConstructor = ws;
 
-const prisma = new PrismaClient({
-  adapter: new PrismaNeon({ connectionString: process.env.DATABASE_URL }),
-});
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) throw new Error("DATABASE_URL is not set. See .env.example.");
+
+const prisma = new PrismaClient({ adapter: new PrismaNeon({ connectionString }) });
 
 const EMAIL = "demo@budgetwise.app";
 const PASSWORD = "demo1234";

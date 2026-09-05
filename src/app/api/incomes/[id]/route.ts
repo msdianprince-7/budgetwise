@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import { handler, jsonError, parseBody, requireUserId } from "@/lib/api";
 
 const updateSchema = z
@@ -14,7 +14,7 @@ const updateSchema = z
 type Params = { params: Promise<{ id: string }> };
 
 async function ownedIncome(id: string, userId: string) {
-  const income = await prisma.income.findFirst({ where: { id, userId } });
+  const income = await getPrisma().income.findFirst({ where: { id, userId } });
   if (!income) throw jsonError("Income entry not found", 404);
   return income;
 }
@@ -25,7 +25,7 @@ export const PATCH = handler(async (req: Request, { params }: Params) => {
   await ownedIncome(id, userId);
 
   const data = await parseBody(req, updateSchema);
-  const income = await prisma.income.update({ where: { id }, data });
+  const income = await getPrisma().income.update({ where: { id }, data });
   return NextResponse.json({ income });
 });
 
@@ -34,6 +34,6 @@ export const DELETE = handler(async (req: Request, { params }: Params) => {
   const { id } = await params;
   await ownedIncome(id, userId);
 
-  await prisma.income.delete({ where: { id } });
+  await getPrisma().income.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 });

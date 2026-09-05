@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { getPrisma } from "@/lib/db";
 import { signToken, setSessionCookie } from "@/lib/auth";
 import { handler, jsonError, parseBody } from "@/lib/api";
 
@@ -13,7 +13,7 @@ const schema = z.object({
 export const POST = handler(async (req: Request) => {
   const { email, password } = await parseBody(req, schema);
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await getPrisma().user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return jsonError("Incorrect email or password", 401);
   }
