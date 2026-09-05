@@ -49,6 +49,14 @@ amount it is over.
 The same Neon database backs both local development and the deployed app, so what you see
 locally is what a reviewer sees.
 
+**A note on the LLM provider.** The brief suggests OpenAI, Anthropic Claude or Google Gemini.
+This uses Groq, running `openai/gpt-oss-120b` — OpenAI's open-weights model on Groq's inference
+hardware. Two reasons: the health check returns in roughly three seconds rather than ten, which
+matters for a button a user waits on, and Groq's API is OpenAI-compatible, so the provider is not
+baked into the design. Switching to OpenAI, Anthropic or Gemini means replacing the client and
+the response-format call in `src/lib/ai.ts`; the prompt, the schema, the Zod validation and every
+caller stay as they are.
+
 ---
 
 ## Running it locally
