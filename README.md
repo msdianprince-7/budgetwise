@@ -5,6 +5,35 @@ AI financial health check written against your own numbers.
 
 Built as the Zenara Technologies / ADWIZR take-home assignment for Full Stack Developer (AI-Enabled).
 
+**Live demo: <https://budgetwise-blue.vercel.app>** — log in with `demo@budgetwise.app` / `demo1234`,
+or create your own account.
+
+---
+
+## Screenshots
+
+**Dashboard — dark theme (default)**
+
+![Dashboard in dark mode](docs/screenshots/02-dashboard-dark.png)
+
+**AI Financial Health Check** — a score, a verdict, and three recommendations ranked by the money
+each one frees up, every one quoting the user's own figures.
+
+![AI financial health check results](docs/screenshots/03-ai-health-check.png)
+
+**Dashboard — light theme**
+
+![Dashboard in light mode](docs/screenshots/04-dashboard-light.png)
+
+**Budget limits** — spend against each cap, with an over-budget row marked by colour and by the
+amount it is over.
+
+![Per-category budget limits](docs/screenshots/05-budget-limits.png)
+
+**Sign in**
+
+![Login screen](docs/screenshots/01-login.png)
+
 ---
 
 ## Stack
@@ -204,7 +233,8 @@ is unthrottled per user.
 
 ## Deployment
 
-Deployed on Vercel with the database on Neon Postgres. The same three environment variables the
+Live at <https://budgetwise-blue.vercel.app>, deployed on Vercel with the database on Neon
+Postgres. Pushes to `master` deploy automatically. The same three environment variables the
 app needs locally are set in the Vercel project: `DATABASE_URL`, `JWT_SECRET` and `GROQ_API_KEY`.
 
 Two details that matter when deploying this:
